@@ -26,8 +26,8 @@ async function addApplied(req, res){
         let showApplied = await Applied.findById(applied._id)
             .select('reason status id_user')
             .populate({
-                path: 'id_user',
-                select:['fullname', 'email', 'image'],
+                path: 'id_investor id_user',
+                select:[ 'name', 'fullname', 'email', 'image'],
                 populate: {
                     path: 'id_profile_athlete id_achievement_athlete',
                     select: ['_id', 'phone', 'address', 'aboutme', 'weight', 'height', 'birthdate', 'birthplace', 'gender', 'blood_type', 'parent_name', 'parent_phonenumber', 'parent_job', 'education_level', 'name_education', 'link_sosmed', 'link_youtube', 'id_sport_category', 'title', 'year', 'image']
@@ -39,13 +39,15 @@ async function addApplied(req, res){
         let subject         = 'Apply ' + scholarship.title
 
         let link            = "http://"+req.get('host')+"/api/v1/applied/"+applied._id;
-        let html            = '<br>Reason to apply: '+showApplied.reason
-            html            += '<br>Email: '+showApplied.id_user.email
+        let html            = '<br>Dear '+showApplied.id_investor.name+','
+            html            += '<br><br>You have a new scholarship application. Following the applicant.'
             html            += '<br>Fullname: '+showApplied.id_user.fullname
+            html            += '<br>Email: '+showApplied.id_user.email
             html            += '<br>Image: '+showApplied.id_user.image
-            html            += '<br><br>For detail information click link below';
-            html            += '<br><strong><a href='+link+'>'+link+'</a></strong>';
-            html            += '<br><br>Thanks,';
+            html            += '<br>Reason to apply: '+showApplied.reason 
+            html            += '<br><br>For detail information click button or link below!';
+            html            += '<br><br><a href='+link+'><button type="button">See Detail User Apply</button></a>  or  <strong><a href='+link+'>'+link+'</a></strong>';
+            html            += '<br><br><br>Best regards,';
             html            += '<br>Admin';
 
         funcHelpers.sendMail(email_to, email_from, subject, html);

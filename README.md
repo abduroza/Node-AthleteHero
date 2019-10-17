@@ -4,7 +4,7 @@
   - Sendgrid account
 
 ### How to use
-1. Clone the project app
+1. Clone the project app from gitlab
   `git clone git@gitlab.com:abduroza/athletehero.git` or `git clone https://gitlab.com/abduroza/athletehero.git`
 
 2. Go to project app directory

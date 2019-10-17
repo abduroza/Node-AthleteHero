@@ -21,10 +21,6 @@ const scholarshipSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'Total fund must be filled in'],
     },
-    deadline: {
-        type: Date,
-        required: [true, 'Deadline submission must be filled in']
-    },
     start_date: {
         type: Date,
         required: [true, 'Start date must be filled in']

@@ -7,6 +7,7 @@ router.get('/', auth.isAuthenticated, usersController.getUsers)
     .post('/', usersController.insertUsers);
 router.put('/:id', auth.isAuthenticated, usersController.usersUpdate)
     .delete('/:id', auth.isAuthenticated, usersController.usersDelete)
+router.delete('/', auth.isAuthenticated, usersController.userDeleteWithAllData)
 router.post('/auth', usersController.usersAuth)
 router.put('/update_image/:id', auth.isAuthenticated, usersController.updateImage)
 

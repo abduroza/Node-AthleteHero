@@ -16,6 +16,17 @@ exports.getAchievementAthlete = function(req, res, next){
         });
 }
 
+exports.getAchievementAthleteByIdUsers = function(req, res, next){
+
+    AchievementAthlete.find({ id_user: req.params.id_users }).populate('id_user')
+        .then((achievement_athlete)=>{
+            res.status(200).json(FuncHelpers.successResponse(achievement_athlete));
+        })
+        .catch((err)=>{
+            res.status(422).json(FuncHelpers.errorResponse(err));
+        });
+}
+
 exports.addAchievementAthlete = async (req, res)=>{
     try {
         if (req.decoded.role !== 'athlete'){

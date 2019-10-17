@@ -1,5 +1,10 @@
 var FuncHelpers     = require('../../../helpers/response');
 var Users           = require('../../../models/api/v1/users');
+var Applied         = require('../../../models/api/v1/applied')
+var Achievement     = require('../../../models/api/v1/achievement_athlete')
+var Investor        = require('../../../models/api/v1/investor')
+var Profile_athlete = require('../../../models/api/v1/profile_athlete')
+var Scholarship     = require('../../../models/api/v1/scholarship')
 const jwt           = require('jsonwebtoken');
 const bcrypt        = require('bcryptjs');
 const env           = require('dotenv').config();
@@ -46,8 +51,7 @@ exports.updateImage = function(req, res){
             "filename" : req.file.originalname,
             "folder"   : "/users"
         });
-    
-        //handle upload success and failure
+
         uploadPromise.then((result)=>{
             Users.findByIdAndUpdate(req.params.id, {image:result.url}, (err, updt)=>{
                 if(err) return res.status(422).json(FuncHelpers.errorResponse("can't update url image")) 
@@ -61,7 +65,7 @@ exports.updateImage = function(req, res){
                     }
                     res.status(200).json(FuncHelpers.successResponse(data_image, "URL image has been update"))
                 })
-            })     
+            })
         })
         .catch (err=>{
             res.status(400).json(error("can't upload file"))
@@ -84,14 +88,47 @@ exports.usersDelete = function(req, res) {
         return res.status(403).json(FuncHelpers.errorResponse('Only For Admin'))
     }
 
-    let id          = req.params.id; 
-    Users.findByIdAndRemove(id).exec()
-        .then((users)=>{
-            res.status(200).json(FuncHelpers.successResponse("Success delete Admin"));
+    Applied.deleteMany({id_user: req.params.id}).exec()
+        .then((applied) => {
+            Achievement.deleteMany({id_user: req.params.id}).exec().then()
+            Profile_athlete.deleteOne({id_user: req.params.id}).exec().then()
+            Scholarship.deleteMany({id_user: req.params.id}).exec().then()
+            Investor.deleteOne({id_user: req.params.id}).exec().then()
+            Users.findByIdAndDelete(req.params.id).exec()
+                .then((user)=>{
+                    res.status(200).json(FuncHelpers.successResponse(user, "Success delete user"));
+                })
         })
         .catch((err)=>{
             res.status(422).json(FuncHelpers.errorResponse(err));
-        });
+        })
+}
+
+exports.userDeleteWithAllData = async function(req, res){
+    if (req.decoded.role == 'athlete'){
+        try {
+            let applied = await Applied.deleteMany({id_user: req.decoded._id})
+            let achievement = await Achievement.deleteMany({id_user: req.decoded._id})
+            let athlete = await Profile_athlete.deleteOne({id_user: req.decoded._id})
+            let user = await Users.findByIdAndDelete(req.decoded._id)
+
+            res.status(200).json(FuncHelpers.successResponse(user, "Delete user success"))
+        } catch (err) {
+            res.status(422).json(FuncHelpers.errorResponse(err))
+        }
+    } else if (req.decoded.role == 'investor'){
+        try {
+            let scholarship = await Scholarship.deleteMany({id_user: req.decoded._id})
+            let investor = await Investor.deleteOne({id_user: req.decoded._id})
+            let user = await Users.findByIdAndDelete(req.decoded._id)
+
+            res.status(200).json(FuncHelpers.successResponse(user, "Show your applied scholarship"))
+        } catch (err) {
+            res.status(422).json(FuncHelpers.errorResponse(err))
+        }
+    } else {
+        return res.status(403).json(FuncHelpers.errorResponse('Admin account not allowed to deleted'))
+    }
 }
 
 exports.forgotPassword = function(req, res, next){

@@ -4,7 +4,8 @@ var achievementAthleteController = require('../../../controllers/api/v1/achievem
 
 router.post('/', auth.isAuthenticated, achievementAthleteController.addAchievementAthlete)
      .get('/', auth.isAuthenticated, achievementAthleteController.getAchievementAthlete)
-router.put('/:id', auth.isAuthenticated, achievementAthleteController.editAchievementAthlete)
+router.get('/:id_users', achievementAthleteController.getAchievementAthleteByIdUsers)
+    .put('/:id', auth.isAuthenticated, achievementAthleteController.editAchievementAthlete)
     .delete('/:id', auth.isAuthenticated, achievementAthleteController.deleteAchievementAthlete) 
 router.put('/update_image/:id', auth.isAuthenticated, achievementAthleteController.updateImage)
 
