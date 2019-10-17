@@ -19,7 +19,7 @@
   `npm run develop`
 
 6. Getting started with register user 
-```sh
   open postman. Fill URL with `localhost:3000/api/v1/users` and select `x-www-form-urlencoded` on the `request body` tab and enter the field name `email`, `password`, `fullname`, `role`. 
-```
+
 7. For detail information see the documentation 
+
