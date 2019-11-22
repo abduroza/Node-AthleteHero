@@ -55,7 +55,7 @@ async function addScholarship(req, res){
                         cloudinary.uploader.upload(file.content, {use_filename: true, folder: "belegend"}, (err, result) =>{
                             if (err) return res.status(400).json(funcHelpers.errorResponse(err))
 
-                            scholarship.image = result.url
+                            scholarship.image = result.secure_url
                             scholarship.save()
 
                             res.status(201).json(funcHelpers.successResponse(scholarship, "Add scholarship success"))
@@ -81,22 +81,17 @@ async function editScholarship(req, res){
             Scholarship.findByIdAndUpdate(req.params.id, {$set: req.body}, (err, scholarship) =>{
                 if (err) return res.status(400).json(funcHelpers.errorResponse(err))
 
-                Investor.findOne({id_user: req.decoded._id}, (err, investor)=>{
-                    investor.list_id_sch.push(scholarship)
-                    investor.save()
+                if (req.file == null){
+                    return res.status(201).json(funcHelpers.successResponse(scholarship, "Edit scholarship success"))
+                }
+                let file = dUri.format(`${req.file.originalname}-${Date.now()}`, req.file.buffer)
+                cloudinary.uploader.upload(file.content, {use_filename: true, folder: "belegend"}, (err, result) =>{
+                    if (err) return res.status(400).json(funcHelpers.errorResponse(err))
 
-                    if (req.file == null){
-                        return res.status(201).json(funcHelpers.successResponse(scholarship, "Edit scholarship success"))
-                    }
-                    let file = dUri.format(`${req.file.originalname}-${Date.now()}`, req.file.buffer)
-                    cloudinary.uploader.upload(file.content, {use_filename: true, folder: "belegend"}, (err, result) =>{
-                        if (err) return res.status(400).json(funcHelpers.errorResponse(err))
+                    scholarship.image = result.secure_url
+                    scholarship.save()
 
-                        scholarship.image = result.url
-                        scholarship.save()
-
-                        res.status(201).json(funcHelpers.successResponse(scholarship, "Edit scholarship success"))
-                    })
+                    res.status(200).json(funcHelpers.successResponse(scholarship, "Edit scholarship success"))
                 })
             })
         })
@@ -166,6 +161,10 @@ async function getAllScholarshipPaginations(req, res){
         , showin_start  = Number(skip)+1
     
     var query = {};
+    if(req.params.keyword) {
+        const userRegex = new RegExp(decodeURI(req.params.keyword), 'i')
+        query["title"] = userRegex;
+    }
     if(req.params.idcategory!=='all') {
         query["id_sport_category"] = req.params.idcategory;
     }
