@@ -13,7 +13,7 @@ proses compile:
 test:
   script:
     - npm install
-    - npm test
+    - npm buid
 
 production:
   type: deploy
