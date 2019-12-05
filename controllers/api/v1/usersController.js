@@ -90,36 +90,13 @@ exports.usersDelete = function(req, res) {
 
     Applied.deleteMany({id_user: req.params.id}).exec()
         .then((applied) => {
-            Achievement.deleteMany({id_user: req.params.id}).exec()
-                .then((achievement)=>{
-                    Profile_athlete.deleteOne({id_user: req.params.id}).exec()
-                        .then((profile_athlete)=>{
-                            Scholarship.deleteMany({id_user: req.params.id}).exec()
-                                .then((scholarship)=>{
-                                    Investor.deleteOne({id_user: req.params.id}).exec()
-                                        .then((investor)=>{
-                                            Users.findByIdAndDelete(req.params.id).exec()
-                                                .then((user)=>{
-                                                    res.status(200).json(FuncHelpers.successResponse(user, "Success delete user"));
-                                                })
-                                                .catch((err)=>{
-                                                    res.status(422).json(FuncHelpers.errorResponse(err));
-                                                })
-                                        })
-                                        .catch((err)=>{
-                                            res.status(422).json(FuncHelpers.errorResponse(err));
-                                        })
-                                })
-                                .catch((err)=>{
-                                    res.status(422).json(FuncHelpers.errorResponse(err));
-                                })
-                        })
-                        .catch((err)=>{
-                            res.status(422).json(FuncHelpers.errorResponse(err));
-                        })
-                })
-                .catch((err)=>{
-                    res.status(422).json(FuncHelpers.errorResponse(err));
+            Achievement.deleteMany({id_user: req.params.id}).exec().then()
+            Profile_athlete.deleteOne({id_user: req.params.id}).exec().then()
+            Scholarship.deleteMany({id_user: req.params.id}).exec().then()
+            Investor.deleteOne({id_user: req.params.id}).exec().then()
+            Users.findByIdAndDelete(req.params.id).exec()
+                .then((user)=>{
+                    res.status(200).json(FuncHelpers.successResponse(user, "Success delete user"));
                 })
         })
         .catch((err)=>{
@@ -162,18 +139,18 @@ exports.forgotPassword = function(req, res, next){
             var exp_token   = new Date(new Date().setHours(new Date().getHours() + 6));
 
             var email_to        = req.body.email;
-            var email_from      = 'aku@todoglint.com';
-            var subject         = 'Change password todoglint.com';
+            var email_from      = 'aku@belegend.com';
+            var subject         = 'Change password belegend.com';
 
-            var link            = "http://"+req.get('host')+"/api/v1/users/change_password/"+users._id+"/"+token;
+            var link            = "http://"+req.get('host')+"/change_password/"+users._id+"/"+token;
             var html            = 'Plese click link bellow, if you want to reset and change your password<br>';
                 html            += '<br><strong><a href='+link+'>'+link+'</a></strong>';
                 html            += '<br><br>Thanks';
 
             FuncHelpers.sendMail(email_to, email_from, subject, html);
-
+            
             var update_token = {
-                token: token,
+                email_token: token,
                 exp_token : exp_token
             } 
             Users.findOneAndUpdate({_id: users._id}, update_token)
@@ -192,9 +169,9 @@ exports.forgotPassword = function(req, res, next){
 exports.resetPassword = function(req, res, next){
     let id          = req.body.id;
     let token       = req.body.token;
-    let password    = req.body.password;
+    let password    = bcrypt.hashSync(req.body.password, saltRounds);
 
-    Users.findOneAndUpdate({"_id":id, "token":token}, { password: password }).exec()
+    Users.findOneAndUpdate({"_id":id, "email_token":token}, { password: password }).exec()
         .then((users)=>{
             res.status(200).json(FuncHelpers.successResponse(users));
         })
@@ -280,13 +257,13 @@ exports.insertUsers = function(req, res, next){
 exports.usersVerifyEmail = function(req, res, next){  
     let token = req.params.token;
 
-    Users.findOne({ token: token }, 'exp_token').exec()
+    Users.findOne({ email_token: token }, 'exp_token').exec()
         .then((users)=>{
             if(Date.now()<users.exp_token){
 
                 Users.findOneAndUpdate({token: token}, { is_verified: true})
                 .then((users)=>{
-                    res.status(200).json(FuncHelpers.successResponse("Success verified your users"));
+                    res.redirect('http://belegend-staging.herokuapp.com/');
                 })
                 .catch((err)=>{
                     res.status(422).json(err);
